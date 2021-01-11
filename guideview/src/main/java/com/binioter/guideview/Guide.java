@@ -287,6 +287,7 @@ public class Guide implements View.OnKeyListener, View.OnTouchListener {
                 isTouchPointInView(mConfiguration.mTargetView, (int) motionEvent.getRawX(), (int) motionEvent.getRawY())) {
             Log.e("EventGuide", "在View内部");
             mConfiguration.mTargetView.onTouchEvent(motionEvent);
+            dismiss();//点击以后自身消失
             return false;
         } else {
             Log.e("EventGuide", "在View: 外部");
