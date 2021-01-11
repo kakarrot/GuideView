@@ -302,9 +302,6 @@ class MaskView extends ViewGroup {
         mEraserCanvas.drawColor(mFullingPaint.getColor());
         if (!mOverlayTarget) {
             switch (mStyle) {
-                case Component.ROUNDRECT:
-                    mEraserCanvas.drawRoundRect(mTargetRect, mCorner, mCorner, mEraser);
-                    break;
                 case Component.CIRCLE:
                     mEraserCanvas.drawCircle(mTargetRect.centerX(), mTargetRect.centerY(),
                             mTargetRect.width() / 2, mEraser);

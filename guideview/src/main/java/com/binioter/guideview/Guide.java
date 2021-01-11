@@ -2,6 +2,7 @@ package com.binioter.guideview;
 
 import android.app.Activity;
 import android.content.Context;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -31,6 +32,8 @@ public class Guide implements View.OnKeyListener, View.OnTouchListener {
     private Component[] mComponents;
     // 根据locInwindow定位后，是否需要判断loc值非0
     private boolean mShouldCheckLocInWindow = true;
+    // 允许target内部事件传递
+    private boolean mAllowTargetTouchEvent = true;
     private GuideBuilder.OnVisibilityChangedListener mOnVisibilityChangedListener;
     private GuideBuilder.OnSlideListener mOnSlideListener;
 
@@ -48,6 +51,10 @@ public class Guide implements View.OnKeyListener, View.OnTouchListener {
 
     public void setOnSlideListener(GuideBuilder.OnSlideListener onSlideListener) {
         this.mOnSlideListener = onSlideListener;
+    }
+
+    public void setAllowTargetTouchEvent(boolean canTouchInside) {
+        mAllowTargetTouchEvent = canTouchInside;
     }
 
     /**
@@ -245,23 +252,44 @@ public class Guide implements View.OnKeyListener, View.OnTouchListener {
 
     float startY = -1f;
 
+    private boolean isTouchPointInView(View view, int x, int y) {
+        if (view == null) {
+            return false;
+        }
+        int[] location = new int[2];
+        view.getLocationOnScreen(location);
+        int left = location[0];
+        int top = location[1];
+        int right = left + view.getMeasuredWidth();
+        int bottom = top + view.getMeasuredHeight();
+        return (y >= top && y <= bottom && x >= left && x <= right);
+    }
+
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
             startY = motionEvent.getY();
         } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
-            if (startY - motionEvent.getY() > DimenUtil.dp2px(view.getContext(), SLIDE_THRESHOLD)) {
-                if (mOnSlideListener != null) {
+            if (mOnSlideListener != null) {
+                if (startY - motionEvent.getY() > DimenUtil.dp2px(view.getContext(), SLIDE_THRESHOLD)) {
                     mOnSlideListener.onSlideListener(GuideBuilder.SlideState.UP);
-                }
-            } else if (motionEvent.getY() - startY > DimenUtil.dp2px(view.getContext(), SLIDE_THRESHOLD)) {
-                if (mOnSlideListener != null) {
+                } else if (motionEvent.getY() - startY > DimenUtil.dp2px(view.getContext(), SLIDE_THRESHOLD)) {
                     mOnSlideListener.onSlideListener(GuideBuilder.SlideState.DOWN);
                 }
             }
+
             if (mConfiguration != null && mConfiguration.mAutoDismiss) {
                 dismiss();
             }
+        }
+        if (mAllowTargetTouchEvent &&
+                mConfiguration!= null &&
+                isTouchPointInView(mConfiguration.mTargetView, (int) motionEvent.getRawX(), (int) motionEvent.getRawY())) {
+            Log.e("EventGuide", "在View内部");
+            mConfiguration.mTargetView.onTouchEvent(motionEvent);
+            return false;
+        } else {
+            Log.e("EventGuide", "在View: 外部");
         }
         return true;
     }

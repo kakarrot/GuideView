@@ -344,7 +344,7 @@ public class GuideBuilder {
     /**
      * 手势滑动监听
      */
-    public static interface OnSlideListener {
+    public interface OnSlideListener {
 
         void onSlideListener(SlideState state);
     }
@@ -352,7 +352,7 @@ public class GuideBuilder {
     /**
      * 遮罩可见发生变化时的事件监听
      */
-    public static interface OnVisibilityChangedListener {
+    public interface OnVisibilityChangedListener {
 
         void onShown();
 
