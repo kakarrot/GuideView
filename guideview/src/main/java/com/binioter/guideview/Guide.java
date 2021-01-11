@@ -33,7 +33,7 @@ public class Guide implements View.OnKeyListener, View.OnTouchListener {
     // 根据locInwindow定位后，是否需要判断loc值非0
     private boolean mShouldCheckLocInWindow = true;
     // 允许target内部事件传递
-    private boolean mAllowTargetTouchEvent = true;
+    private boolean mAllowTargetTouchEvent = false;
     private GuideBuilder.OnVisibilityChangedListener mOnVisibilityChangedListener;
     private GuideBuilder.OnSlideListener mOnSlideListener;
 
