@@ -277,18 +277,18 @@ public class Guide implements View.OnKeyListener, View.OnTouchListener {
                     mOnSlideListener.onSlideListener(GuideBuilder.SlideState.DOWN);
                 }
             }
-
-            if (mConfiguration != null && mConfiguration.mAutoDismiss) {
-                dismiss();
-            }
         }
         if (mAllowTargetTouchEvent &&
                 mConfiguration!= null &&
                 isTouchPointInView(mConfiguration.mTargetView, (int) motionEvent.getRawX(), (int) motionEvent.getRawY())) {
-            Log.e("EventGuide", "在View内部");
-            mConfiguration.mTargetView.onTouchEvent(motionEvent);
-            dismiss();//点击以后自身消失
-            return false;
+            if(motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                Log.e("EventGuide", "在View内部: ActionUp" + motionEvent.getAction());
+                mConfiguration.mTargetView.performClick();
+            }
+            if(mConfiguration.mAutoDismiss && motionEvent.getAction() == MotionEvent.ACTION_UP) {
+                dismiss();
+            }
+            return true;
         } else {
             Log.e("EventGuide", "在View: 外部");
         }
