@@ -3,7 +3,9 @@ package com.demo.aty;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -29,6 +31,7 @@ public class SimpleGuideViewActivity extends Activity {
         header_imgbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                Log.e("EventGuide", "透传事件到targetView");
                 Toast.makeText(SimpleGuideViewActivity.this, "show", Toast.LENGTH_SHORT).show();
             }
         });
@@ -40,21 +43,14 @@ public class SimpleGuideViewActivity extends Activity {
                 showGuideView();
             }
         });
-
-        findViewById(R.id.header_imgbtn).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Log.e("EventGuide", "透传事件到targetView");
-            }
-        });
     }
 
     public void showGuideView() {
         GuideBuilder builder = new GuideBuilder();
-        builder.setTargetView(header_imgbtn)
+        builder.setTargetView(findViewById(R.id.flContainer))
                 .setAlpha(150)
                 .setHighTargetCorner(20)
-                .setAutoDismiss(true)
+                .setAutoDismiss(false)
                 .setHighTargetPadding(10);
         builder.setOnVisibilityChangedListener(new GuideBuilder.OnVisibilityChangedListener() {
             @Override

@@ -2,12 +2,15 @@ package com.binioter.guideview;
 
 import android.app.Activity;
 import android.content.Context;
+import android.os.SystemClock;
 import android.util.Log;
 import android.view.GestureDetector;
+import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.accessibility.AccessibilityEvent;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
@@ -19,7 +22,7 @@ import android.view.animation.AnimationUtils;
  * Created by binIoter
  */
 
-public class Guide implements View.OnKeyListener, View.OnTouchListener {
+public class Guide implements View.OnKeyListener, ViewGroup.OnTouchListener {
 
     Guide() {
     }
@@ -33,6 +36,7 @@ public class Guide implements View.OnKeyListener, View.OnTouchListener {
     private Component[] mComponents;
     // 根据locInwindow定位后，是否需要判断loc值非0
     private boolean mShouldCheckLocInWindow = true;
+
     // 允许target内部事件传递
     private boolean mAllowTargetTouchEvent = false;
 
@@ -59,9 +63,9 @@ public class Guide implements View.OnKeyListener, View.OnTouchListener {
         mAllowTargetTouchEvent = canTouchInside;
     }
 
-    private GestureDetector gestureDetector = null;
+    //private GestureDetector gestureDetector = null;
 
-    private SimpleGestureListener listener = new SimpleGestureListener() {
+    private final SimpleGestureListener listener = new SimpleGestureListener() {
         //用GestureDetector来判断是否是点击事件，只有点击事件，且设置自动dismiss的时候才生效
         @Override
         public boolean onSingleTapUp(MotionEvent e) {
@@ -78,7 +82,7 @@ public class Guide implements View.OnKeyListener, View.OnTouchListener {
      * @param activity 目标Activity
      */
     public void show(Activity activity) {
-        gestureDetector = new GestureDetector(activity, listener);
+        //gestureDetector = new GestureDetector(activity, listener);
         show(activity, null);
     }
 
@@ -283,7 +287,6 @@ public class Guide implements View.OnKeyListener, View.OnTouchListener {
 
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
-
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
             startY = motionEvent.getY();
         } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
@@ -295,12 +298,26 @@ public class Guide implements View.OnKeyListener, View.OnTouchListener {
                 }
             }
         }
+
         boolean isTouchTargetViewInside = isTouchPointInView(mConfiguration.mTargetView, (int) motionEvent.getRawX(), (int) motionEvent.getRawY());
         if (mAllowTargetTouchEvent && mConfiguration != null && isTouchTargetViewInside) {
-            //手动将事件透传下去
-            mConfiguration.mTargetView.onTouchEvent(motionEvent);
-            return gestureDetector.onTouchEvent(motionEvent);
+            if(mConfiguration.mAutoDismiss) {
+                dismiss();
+            }
+            return false;
         }
         return true;
     }
+
+    private void sendMotionEvent(MotionEvent ev) {
+        long downTime = SystemClock.uptimeMillis();
+        long eventTime = SystemClock.uptimeMillis();
+        int metaState = 0;
+        MotionEvent motionEvent = MotionEvent.obtain(downTime, eventTime, ev.getAction(), ev.getX(), ev.getY(), metaState);
+        motionEvent.setSource(InputDevice.SOURCE_TOUCHSCREEN);
+        Log.d("Cursor Event", ev.getX() + "-" + ev.getY());
+        ((ViewGroup) mConfiguration.mTargetView).dispatchTouchEvent(motionEvent);
+    }
+
+
 }
