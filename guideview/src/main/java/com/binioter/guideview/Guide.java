@@ -3,6 +3,7 @@ package com.binioter.guideview;
 import android.app.Activity;
 import android.content.Context;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -34,6 +35,7 @@ public class Guide implements View.OnKeyListener, View.OnTouchListener {
     private boolean mShouldCheckLocInWindow = true;
     // 允许target内部事件传递
     private boolean mAllowTargetTouchEvent = false;
+
     private GuideBuilder.OnVisibilityChangedListener mOnVisibilityChangedListener;
     private GuideBuilder.OnSlideListener mOnSlideListener;
 
@@ -57,12 +59,26 @@ public class Guide implements View.OnKeyListener, View.OnTouchListener {
         mAllowTargetTouchEvent = canTouchInside;
     }
 
+    private GestureDetector gestureDetector = null;
+
+    private SimpleGestureListener listener = new SimpleGestureListener() {
+        //用GestureDetector来判断是否是点击事件，只有点击事件，且设置自动dismiss的时候才生效
+        @Override
+        public boolean onSingleTapUp(MotionEvent e) {
+            if(mConfiguration.mAutoDismiss) {
+                dismiss();
+            }
+            return true;
+        }
+    };
+
     /**
      * 显示遮罩
      *
      * @param activity 目标Activity
      */
     public void show(Activity activity) {
+        gestureDetector = new GestureDetector(activity, listener);
         show(activity, null);
     }
 
@@ -267,6 +283,7 @@ public class Guide implements View.OnKeyListener, View.OnTouchListener {
 
     @Override
     public boolean onTouch(View view, MotionEvent motionEvent) {
+
         if (motionEvent.getAction() == MotionEvent.ACTION_DOWN) {
             startY = motionEvent.getY();
         } else if (motionEvent.getAction() == MotionEvent.ACTION_UP) {
@@ -278,19 +295,11 @@ public class Guide implements View.OnKeyListener, View.OnTouchListener {
                 }
             }
         }
-        if (mAllowTargetTouchEvent &&
-                mConfiguration!= null &&
-                isTouchPointInView(mConfiguration.mTargetView, (int) motionEvent.getRawX(), (int) motionEvent.getRawY())) {
-            if(motionEvent.getAction() == MotionEvent.ACTION_UP) {
-                Log.e("EventGuide", "在View内部: ActionUp" + motionEvent.getAction());
-                mConfiguration.mTargetView.performClick();
-            }
-            if(mConfiguration.mAutoDismiss && motionEvent.getAction() == MotionEvent.ACTION_UP) {
-                dismiss();
-            }
-            return true;
-        } else {
-            Log.e("EventGuide", "在View: 外部");
+        boolean isTouchTargetViewInside = isTouchPointInView(mConfiguration.mTargetView, (int) motionEvent.getRawX(), (int) motionEvent.getRawY());
+        if (mAllowTargetTouchEvent && mConfiguration != null && isTouchTargetViewInside) {
+            //手动将事件透传下去
+            mConfiguration.mTargetView.onTouchEvent(motionEvent);
+            return gestureDetector.onTouchEvent(motionEvent);
         }
         return true;
     }

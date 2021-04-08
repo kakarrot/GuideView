@@ -54,7 +54,7 @@ public class SimpleGuideViewActivity extends Activity {
         builder.setTargetView(header_imgbtn)
                 .setAlpha(150)
                 .setHighTargetCorner(20)
-                .setAutoDismiss(false)
+                .setAutoDismiss(true)
                 .setHighTargetPadding(10);
         builder.setOnVisibilityChangedListener(new GuideBuilder.OnVisibilityChangedListener() {
             @Override
